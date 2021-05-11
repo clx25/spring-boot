@@ -1,0 +1,18 @@
+plugins {
+    id "java"
+    id "org.springframework.boot.conventions"
+}
+
+description = "learn-simple"
+
+dependencies {
+    implementation(project(":spring-boot-project:spring-boot-starters:spring-boot-starter"))
+    implementation(project(":spring-boot-project:spring-boot-starters:spring-boot-starter-web"))
+
+    implementation("jakarta.validation:jakarta.validation-api")
+    implementation("org.hibernate.validator:hibernate-validator") {
+        exclude group: "javax.validation"
+    }
+    annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
+    testImplementation(project(":spring-boot-project:spring-boot-starters:spring-boot-starter-test"))
+}

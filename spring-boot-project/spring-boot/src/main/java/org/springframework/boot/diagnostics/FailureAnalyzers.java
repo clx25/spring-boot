@@ -61,6 +61,7 @@ final class FailureAnalyzers implements SpringBootExceptionReporter {
 
 	FailureAnalyzers(ConfigurableApplicationContext context, ClassLoader classLoader) {
 		this.classLoader = (classLoader != null) ? classLoader : getClassLoader(context);
+		//获取所有的故障分析器
 		this.analyzers = loadFailureAnalyzers(context, this.classLoader);
 	}
 
@@ -70,6 +71,7 @@ final class FailureAnalyzers implements SpringBootExceptionReporter {
 
 	private List<FailureAnalyzer> loadFailureAnalyzers(ConfigurableApplicationContext context,
 			ClassLoader classLoader) {
+		//从spring.factories中获取并创建
 		List<String> classNames = SpringFactoriesLoader.loadFactoryNames(FailureAnalyzer.class, classLoader);
 		List<FailureAnalyzer> analyzers = new ArrayList<>();
 		for (String className : classNames) {

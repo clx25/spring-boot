@@ -64,6 +64,7 @@ public abstract class Slf4JLoggingSystem extends AbstractLoggingSystem {
 
 	private void configureJdkLoggingBridgeHandler() {
 		try {
+			//是否将jul重定向到slf4j
 			if (isBridgeJulIntoSlf4j()) {
 				removeJdkLoggingBridgeHandler();
 				SLF4JBridgeHandler.install();

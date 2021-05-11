@@ -41,15 +41,34 @@ class EnableConfigurationPropertiesRegistrar implements ImportBeanDefinitionRegi
 	private static final String METHOD_VALIDATION_EXCLUDE_FILTER_BEAN_NAME = Conventions
 			.getQualifiedAttributeName(EnableConfigurationPropertiesRegistrar.class, "methodValidationExcludeFilter");
 
+	/**
+	 * @param metadata 如果需要的话，自动配置类会使用EnableConfigurationProperties注解
+	 *                 来加载properties类，每个注解都会使用此方法来获取properties类，所以这个metadata
+	 *                 是自动配置类的元数据
+	 */
 	@Override
 	public void registerBeanDefinitions(AnnotationMetadata metadata, BeanDefinitionRegistry registry) {
+		/**
+		 * 注册一些组件到bd
+		 * 1. {@link ConfigurationPropertiesBindingPostProcessor}，就是一个PostProcessor，用来处理properties类
+		 * 2. {@link ConfigurationPropertiesBinder.Factory} 用于创建Binder
+		 * 3. 通过工厂创建的{@link ConfigurationPropertiesBinder} properties绑定器，用于属性绑定
+		 * 4. {@link BoundConfigurationProperties} 母鸡
+		 */
 		registerInfrastructureBeans(registry);
+		//一个过滤器，用于把某个类排除在方法验证之外
 		registerMethodValidationExcludeFilter(registry);
 		ConfigurationPropertiesBeanRegistrar beanRegistrar = new ConfigurationPropertiesBeanRegistrar(registry);
+		/**
+		 * 获取{@link EnableConfigurationProperties}注解中的值，
+		 * 这个值是一个properties类的Class
+		 * 把这个类注册到bd中，并且如果这个类没有{@link ConfigurationProperties}注解会抛出异常
+		 */
 		getTypes(metadata).forEach(beanRegistrar::register);
 	}
 
 	private Set<Class<?>> getTypes(AnnotationMetadata metadata) {
+		//获取元数据中EnableConfigurationProperties注解中的类
 		return metadata.getAnnotations().stream(EnableConfigurationProperties.class)
 				.flatMap((annotation) -> Arrays.stream(annotation.getClassArray(MergedAnnotation.VALUE)))
 				.filter((type) -> void.class != type).collect(Collectors.toSet());

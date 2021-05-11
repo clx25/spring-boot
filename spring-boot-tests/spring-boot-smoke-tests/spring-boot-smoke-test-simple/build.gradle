@@ -11,6 +11,6 @@ dependencies {
 	implementation("org.hibernate.validator:hibernate-validator") {
 		exclude group: "javax.validation"
 	}
-
+	annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
 	testImplementation(project(":spring-boot-project:spring-boot-starters:spring-boot-starter-test"))
 }

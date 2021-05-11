@@ -40,6 +40,7 @@ import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.boot.availability.AvailabilityChangeEvent;
 import org.springframework.boot.availability.ReadinessState;
 import org.springframework.boot.web.context.ConfigurableWebServerApplicationContext;
+import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory;
 import org.springframework.boot.web.server.WebServer;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.boot.web.servlet.ServletContextInitializer;
@@ -156,6 +157,7 @@ public class ServletWebServerApplicationContext extends GenericWebApplicationCon
 	protected void onRefresh() {
 		super.onRefresh();
 		try {
+			//创建web服务
 			createWebServer();
 		}
 		catch (Throwable ex) {
@@ -176,10 +178,17 @@ public class ServletWebServerApplicationContext extends GenericWebApplicationCon
 		ServletContext servletContext = getServletContext();
 		if (webServer == null && servletContext == null) {
 			StartupStep createWebServer = this.getApplicationStartup().start("spring.boot.webserver.create");
+			/**
+			 * 获取web服务器的创建工厂，这个工厂由自动配置类注册到spring容器
+			 * servlet环境下返回的{@link TomcatServletWebServerFactory}
+			 */
 			ServletWebServerFactory factory = getWebServerFactory();
 			createWebServer.tag("factory", factory.getClass().toString());
+
+			//不同的工厂会创建对应的web服务器，并配置属性
 			this.webServer = factory.getWebServer(getSelfInitializer());
 			createWebServer.end();
+			//注册两个web服务器的生命周期方法，一个用于shutdown(正常关闭),一个用于start，stop
 			getBeanFactory().registerSingleton("webServerGracefulShutdown",
 					new WebServerGracefulShutdownLifecycle(this.webServer));
 			getBeanFactory().registerSingleton("webServerStartStop",
@@ -193,6 +202,7 @@ public class ServletWebServerApplicationContext extends GenericWebApplicationCon
 				throw new ApplicationContextException("Cannot initialize servlet context", ex);
 			}
 		}
+		//初始化Environment的属性源，在Environment初始化期间有部分数据只是标记应该存在，而没有实际初始化
 		initPropertySources();
 	}
 
@@ -204,6 +214,10 @@ public class ServletWebServerApplicationContext extends GenericWebApplicationCon
 	 */
 	protected ServletWebServerFactory getWebServerFactory() {
 		// Use bean names so that we don't consider the hierarchy
+		/**
+		 * 这个ServletWebServerFactory在
+		 * {@link org.springframework.boot.autoconfigure.web.servlet.ServletWebServerFactoryConfiguration}中被注册到bd
+		 */
 		String[] beanNames = getBeanFactory().getBeanNamesForType(ServletWebServerFactory.class);
 		if (beanNames.length == 0) {
 			throw new ApplicationContextException("Unable to start ServletWebServerApplicationContext due to missing "

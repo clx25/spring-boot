@@ -53,6 +53,9 @@ public class DelegatingApplicationListener implements ApplicationListener<Applic
 
 	@Override
 	public void onApplicationEvent(ApplicationEvent event) {
+		//如果是ApplicationEnvironmentPreparedEvent事件
+		//该监听器就获取环境变量context.listener.classes中的值解析为监听器并执行
+		//执行顺序按照order的值排序，越小优先级越高
 		if (event instanceof ApplicationEnvironmentPreparedEvent) {
 			List<ApplicationListener<ApplicationEvent>> delegates = getListeners(
 					((ApplicationEnvironmentPreparedEvent) event).getEnvironment());
@@ -74,6 +77,7 @@ public class DelegatingApplicationListener implements ApplicationListener<Applic
 		if (environment == null) {
 			return Collections.emptyList();
 		}
+		//接信息环境变量context.listener.classes的值，判断是不是监听器
 		String classNames = environment.getProperty(PROPERTY_NAME);
 		List<ApplicationListener<ApplicationEvent>> listeners = new ArrayList<>();
 		if (StringUtils.hasLength(classNames)) {

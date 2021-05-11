@@ -53,7 +53,11 @@ public class EnvironmentPostProcessorApplicationListener implements SmartApplica
 	 * Create a new {@link EnvironmentPostProcessorApplicationListener} with
 	 * {@link EnvironmentPostProcessor} classes loaded via {@code spring.factories}.
 	 */
+	/**
+	 * 这个监听器在{@link SpringApplication#SpringApplication(org.springframework.core.io.ResourceLoader, java.lang.Class[])被创建}}
+	 */
 	public EnvironmentPostProcessorApplicationListener() {
+		//初始化EnvironmentPostProcessorsFactory
 		this(EnvironmentPostProcessorsFactory
 				.fromSpringFactories(EnvironmentPostProcessorApplicationListener.class.getClassLoader()));
 	}
@@ -96,7 +100,9 @@ public class EnvironmentPostProcessorApplicationListener implements SmartApplica
 	private void onApplicationEnvironmentPreparedEvent(ApplicationEnvironmentPreparedEvent event) {
 		ConfigurableEnvironment environment = event.getEnvironment();
 		SpringApplication application = event.getSpringApplication();
+		//实例化从spring.facotries获取的EnvironmentPostProcessorApplicationListener的value,
 		for (EnvironmentPostProcessor postProcessor : getEnvironmentPostProcessors(event.getBootstrapContext())) {
+			//执行，东西太多看着害怕，不看了。。。有一个是初始化environment中random相关，应该与配置文件中解析random表达式相关
 			postProcessor.postProcessEnvironment(environment, application);
 		}
 	}

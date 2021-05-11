@@ -34,7 +34,7 @@ import org.springframework.util.StringUtils;
 /**
  * {@link ApplicationContextInitializer} that delegates to other initializers that are
  * specified under a {@literal context.initializer.classes} environment property.
- *
+ * 这个类用于加载配置中的初始化器，并且该类order=0，所以配置中的初始化器会优先加载
  * @author Dave Syer
  * @author Phillip Webb
  * @since 1.0.0
@@ -50,18 +50,25 @@ public class DelegatingApplicationContextInitializer
 
 	@Override
 	public void initialize(ConfigurableApplicationContext context) {
+		//获取环境变量
 		ConfigurableEnvironment environment = context.getEnvironment();
+		//获取环境变量中初始化器的配置，并转为类对象
 		List<Class<?>> initializerClasses = getInitializerClasses(environment);
 		if (!initializerClasses.isEmpty()) {
+			//执行初始化器
 			applyInitializerClasses(context, initializerClasses);
 		}
 	}
 
 	private List<Class<?>> getInitializerClasses(ConfigurableEnvironment env) {
+		//获取环境中context.initializer.classes配置
+		//所以可以在spring的配置文件中使用context.initializer.classes配置初始化器
 		String classNames = env.getProperty(PROPERTY_NAME);
 		List<Class<?>> classes = new ArrayList<>();
 		if (StringUtils.hasLength(classNames)) {
+			//如果有多个初始化器配置，那么就分割
 			for (String className : StringUtils.tokenizeToStringArray(classNames, ",")) {
+				//创建成对象，放入集合中返回
 				classes.add(getInitializerClass(className));
 			}
 		}

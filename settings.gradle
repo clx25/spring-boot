@@ -1,5 +1,7 @@
 pluginManagement {
 	repositories {
+		maven { url 'https://maven.aliyun.com/nexus/content/groups/public/' }
+		maven { url 'https://maven.aliyun.com/nexus/content/repositories/jcenter' }
 		mavenCentral()
 		gradlePluginPortal()
 		maven {
@@ -81,3 +83,8 @@ file("${rootDir}/spring-boot-project/spring-boot-starters").eachDirMatch(~/sprin
 file("${rootDir}/spring-boot-tests/spring-boot-smoke-tests").eachDirMatch(~/spring-boot-smoke-test.*/) {
 	include "spring-boot-tests:spring-boot-smoke-tests:${it.name}"
 }
+include 'spring-boot-tests:learn:learn-simple'
+findProject(':spring-boot-tests:learn:learn-simple')?.name = 'learn-simple'
+include 'spring-boot-tests:learn:learn-mybatis'
+findProject(':spring-boot-tests:learn:learn-mybatis')?.name = 'learn-mybatis'
+

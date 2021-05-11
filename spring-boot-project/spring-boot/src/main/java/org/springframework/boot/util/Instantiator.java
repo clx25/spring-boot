@@ -87,6 +87,7 @@ public class Instantiator<T> {
 	public List<T> instantiate(Collection<String> names) {
 		List<T> instances = new ArrayList<>(names.size());
 		for (String name : names) {
+			//创建PostProcessor实例，并添加到instances
 			instances.add(instantiate(name));
 		}
 		AnnotationAwareOrderComparator.sort(instances);

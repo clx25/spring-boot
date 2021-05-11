@@ -48,6 +48,7 @@ public interface EnvironmentPostProcessorsFactory {
 	 * @return an {@link EnvironmentPostProcessorsFactory} instance
 	 */
 	static EnvironmentPostProcessorsFactory fromSpringFactories(ClassLoader classLoader) {
+		//创建ReflectionEnvironmentPostProcessorsFactory实例，并注入文件中配置的EnvironmentPostProcessor
 		return new ReflectionEnvironmentPostProcessorsFactory(
 				SpringFactoriesLoader.loadFactoryNames(EnvironmentPostProcessor.class, classLoader));
 	}

@@ -61,6 +61,9 @@ import org.springframework.context.annotation.Configuration;
  * @author Sergey Serdyuk
  */
 @Configuration(proxyBeanMethods = false)
+/**
+ * 这个类在{@link ServletWebServerFactoryAutoConfiguration}中被注册到bd
+ */
 class ServletWebServerFactoryConfiguration {
 
 	@Configuration(proxyBeanMethods = false)
@@ -82,7 +85,6 @@ class ServletWebServerFactoryConfiguration {
 					.addAll(protocolHandlerCustomizers.orderedStream().collect(Collectors.toList()));
 			return factory;
 		}
-
 	}
 
 	/**

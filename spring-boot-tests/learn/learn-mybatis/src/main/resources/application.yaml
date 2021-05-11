@@ -1,0 +1,9 @@
+spring:
+  datasource:
+    url: jdbc:h2:~/mybatis;MV_STORE=false
+    password: 123456
+    driver-class-name: org.h2.Driver
+    username: root
+
+server:
+  port: 5945

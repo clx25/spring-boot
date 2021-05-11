@@ -43,6 +43,7 @@ public interface ApplicationContextFactory {
 	 */
 	ApplicationContextFactory DEFAULT = (webApplicationType) -> {
 		try {
+			//这里就是与spring-framework相同的创建容器
 			switch (webApplicationType) {
 			case SERVLET:
 				return new AnnotationConfigServletWebServerApplicationContext();

@@ -91,6 +91,13 @@ public class AutoConfigurationImportSelector implements DeferredImportSelector, 
 
 	private ConfigurationClassFilter configurationClassFilter;
 
+	/**
+	 * 由于这个类是实现的{@link DeferredImportSelector}所以会使用{@link #getImportGroup}
+	 * 中返回的组去调用，一个组可以用于一个或多个实现类，相当于一个处理器。对于当前类来说就是{@link AutoConfigurationGroup}
+	 * spring会先使用组的process方法，{@link AutoConfigurationGroup#process}
+	 * 然后调用{@link AutoConfigurationGroup#selectImports}返回需要加载的类的entry
+	 * 所以获取需要加载的类要看组的process和selectImports方法，与{@link #selectImports}没有必然联系。
+	 */
 	@Override
 	public String[] selectImports(AnnotationMetadata annotationMetadata) {
 		if (!isEnabled(annotationMetadata)) {
@@ -120,12 +127,18 @@ public class AutoConfigurationImportSelector implements DeferredImportSelector, 
 			return EMPTY_ENTRY;
 		}
 		AnnotationAttributes attributes = getAttributes(annotationMetadata);
+		//从spring.factories中获取自动配置类
 		List<String> configurations = getCandidateConfigurations(annotationMetadata, attributes);
+		//去重
 		configurations = removeDuplicates(configurations);
 		Set<String> exclusions = getExclusions(annotationMetadata, attributes);
+		//对exclusions进行校验
 		checkExcludedClasses(configurations, exclusions);
+		//删掉排除的类
 		configurations.removeAll(exclusions);
+		//使用过滤器排除
 		configurations = getConfigurationClassFilter().filter(configurations);
+		//发布事件
 		fireAutoConfigurationImportEvents(configurations, exclusions);
 		return new AutoConfigurationEntry(configurations, exclusions);
 	}
@@ -194,10 +207,13 @@ public class AutoConfigurationImportSelector implements DeferredImportSelector, 
 	private void checkExcludedClasses(List<String> configurations, Set<String> exclusions) {
 		List<String> invalidExcludes = new ArrayList<>(exclusions.size());
 		for (String exclusion : exclusions) {
+			//exclusion能通过反射创建或configurations中没有包含就添加到无效排除集合中
+			//也就是说一个exclusion如果不能创建或者在configurations中不存在，那么这个exclusion就是没有意义的
 			if (ClassUtils.isPresent(exclusion, getClass().getClassLoader()) && !configurations.contains(exclusion)) {
 				invalidExcludes.add(exclusion);
 			}
 		}
+		//不为空，抛异常
 		if (!invalidExcludes.isEmpty()) {
 			handleInvalidExcludes(invalidExcludes);
 		}
@@ -430,10 +446,12 @@ public class AutoConfigurationImportSelector implements DeferredImportSelector, 
 					() -> String.format("Only %s implementations are supported, got %s",
 							AutoConfigurationImportSelector.class.getSimpleName(),
 							deferredImportSelector.getClass().getName()));
+			//获取自动配置类
 			AutoConfigurationEntry autoConfigurationEntry = ((AutoConfigurationImportSelector) deferredImportSelector)
 					.getAutoConfigurationEntry(annotationMetadata);
 			this.autoConfigurationEntries.add(autoConfigurationEntry);
 			for (String importClassName : autoConfigurationEntry.getConfigurations()) {
+				//使用自动配置类的全类名作为key,同一个最原始的注解(@SpringBootApplication)为value构建一个entry集合
 				this.entries.putIfAbsent(importClassName, annotationMetadata);
 			}
 		}
@@ -443,13 +461,17 @@ public class AutoConfigurationImportSelector implements DeferredImportSelector, 
 			if (this.autoConfigurationEntries.isEmpty()) {
 				return Collections.emptyList();
 			}
+			//合并所有entry的Exclusions，如果有多个实现了DeferredImportSelector的类，
+			//并且使用了AutoConfigurationGroup作为分组，那么这个entry集合中也可能会有多个entry
 			Set<String> allExclusions = this.autoConfigurationEntries.stream()
 					.map(AutoConfigurationEntry::getExclusions).flatMap(Collection::stream).collect(Collectors.toSet());
+			//合并所有entry的自动配置类
 			Set<String> processedConfigurations = this.autoConfigurationEntries.stream()
 					.map(AutoConfigurationEntry::getConfigurations).flatMap(Collection::stream)
 					.collect(Collectors.toCollection(LinkedHashSet::new));
+			//删除所有排除类
 			processedConfigurations.removeAll(allExclusions);
-
+			//排序，转为entry集合，每个entry包含自动配置类的全类名与对应的元数据
 			return sortAutoConfigurations(processedConfigurations, getAutoConfigurationMetadata()).stream()
 					.map((importClassName) -> new Entry(this.entries.get(importClassName), importClassName))
 					.collect(Collectors.toList());

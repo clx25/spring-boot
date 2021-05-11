@@ -46,12 +46,19 @@ class ReflectionEnvironmentPostProcessorsFactory implements EnvironmentPostProce
 	}
 
 	ReflectionEnvironmentPostProcessorsFactory(List<String> classNames) {
+		/**
+		 * 这个值包含spring.factories中包含的Environment相关PostProcessors
+		 * 这个值的初始化查看
+		 * @see EnvironmentPostProcessorApplicationListener#EnvironmentPostProcessorApplicationListener()
+		 */
 		this.classNames = classNames;
 	}
 
 	@Override
 	public List<EnvironmentPostProcessor> getEnvironmentPostProcessors(DeferredLogFactory logFactory,
 			ConfigurableBootstrapContext bootstrapContext) {
+		//这个方法的主要功能就是用这个Instantiator初始化this.classNames中保持的postProcessor
+		//这里的lambda表达式表示postProcessor的构造器如果需要哪个类型，那么就把对应的实例传入。
 		Instantiator<EnvironmentPostProcessor> instantiator = new Instantiator<>(EnvironmentPostProcessor.class,
 				(parameters) -> {
 					parameters.add(DeferredLogFactory.class, logFactory);
@@ -60,6 +67,7 @@ class ReflectionEnvironmentPostProcessorsFactory implements EnvironmentPostProce
 					parameters.add(BootstrapContext.class, bootstrapContext);
 					parameters.add(BootstrapRegistry.class, bootstrapContext);
 				});
+		//实例化Environment相关PostProcessors
 		return instantiator.instantiate(this.classNames);
 	}
 

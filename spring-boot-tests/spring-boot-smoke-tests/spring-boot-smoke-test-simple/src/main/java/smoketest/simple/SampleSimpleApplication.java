@@ -16,14 +16,14 @@
 
 package smoketest.simple;
 
-import smoketest.simple.service.HelloWorldService;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-
+import org.springframework.context.ConfigurableApplicationContext;
+import smoketest.simple.service.HelloWorldService;
 @SpringBootApplication
 @EnableConfigurationProperties(SampleConfigurationProperties.class)
 public class SampleSimpleApplication implements CommandLineRunner {
@@ -35,6 +35,7 @@ public class SampleSimpleApplication implements CommandLineRunner {
 	@Autowired
 	private HelloWorldService helloWorldService;
 
+
 	@Override
 	public void run(String... args) {
 		System.out.println(this.helloWorldService.getHelloMessage());
@@ -44,7 +45,9 @@ public class SampleSimpleApplication implements CommandLineRunner {
 	}
 
 	public static void main(String[] args) {
-		SpringApplication.run(SampleSimpleApplication.class, args);
+		ConfigurableApplicationContext cc = SpringApplication.run(SampleSimpleApplication.class, args);
+		TestProperties testProperties = cc.getBean("testProperties", TestProperties.class);
+		System.out.println(testProperties.getName());
+		System.out.println(testProperties.getAge());
 	}
-
 }
